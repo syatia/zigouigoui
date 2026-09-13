@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ARCHER RISE - Plateforme d'entraînement au tir à l'arc">
+    <meta name="theme-color" content="#0F6E56">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ARCHER RISE">
+    <link rel="manifest" href="manifest.json">
+    <title>ARCHER RISE</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; }
+        .header { background: #0F6E56; color: white; padding: 1.25rem; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+        .header-icon { font-size: 24px; }
+        .header-text h1 { font-size: 18px; font-weight: 500; margin: 0; }
+        .header-text p { font-size: 11px; color: rgba(255,255,255,0.65); margin: 0; }
+        .tabs { display: flex; border-bottom: 0.5px solid #ddd; position: sticky; top: 68px; z-index: 99; background: white; }
+        .tab-btn { flex: 1; padding: 8px 4px; border: none; background: none; cursor: pointer; font-size: 11px; color: #555; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #1D9E75; border-bottom-color: #1D9E75; font-weight: 500; }
+        .tab-btn-icon { font-size: 18px; }
+        .content { padding: 1rem; max-width: 700px; margin: 0 auto; }
+        .hidden { display: none; }
+        .filters { display: flex; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .filter-group { }
+        .filter-label { font-size: 12px; color: #555; margin-bottom: 6px; font-weight: 500; }
+        .filter-buttons { display: flex; gap: 4px; }
+        .btn-small { padding: 5px 9px; font-size: 12px; border: 1px solid #ddd; border-radius: 8px; background: transparent; color: #555; cursor: pointer; font-weight: 400; }
+        .btn-small.active { border-color: #1D9E75; background: #E1F5EE; color: #0F6E56; font-weight: 500; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+        .card { background: #fff; border: 0.5px solid #ddd; border-radius: 12px; padding: 1rem; cursor: pointer; text-align: left; }
+        .card-icon { font-size: 28px; margin-bottom: 6px; }
+        .card-title { font-weight: 500; font-size: 14px; }
+        .card-subtitle { font-size: 12px; color: #555; margin-top: 4px; }
+        .back-btn { background: none; border: none; cursor: pointer; color: #1D9E75; font-size: 14px; margin-bottom: 1.5rem; padding: 0; font-weight: 500; }
+        .exercise-item { background: #fff; border: 0.5px solid #ddd; border-radius: 12px; padding: 0.875rem 1rem; margin-bottom: 8px; cursor: pointer; }
+        .exercise-item.expanded { border-color: #1D9E75; }
+        .exercise-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .exercise-title { font-weight: 500; font-size: 14px; color: #111; }
+        .exercise-desc { font-size: 13px; color: #555; margin-top: 8px; line-height: 1.6; }
+        .btn-add { padding: 6px 12px; font-size: 12px; border: 1px solid #1D9E75; border-radius: 8px; background: transparent; color: #1D9E75; cursor: pointer; font-weight: 500; }
+        .btn-add.added { background: #E1F5EE; color: #0F6E56; }
+        .seance-input { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 1.5rem; font-size: 14px; }
+        .seance-empty { text-align: center; padding: 3rem 1rem; color: #555; }
+        .seance-item { background: #fff; border: 0.5px solid #ddd; border-radius: 12px; padding: 0.875rem 1rem; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .seance-number { width: 28px; height: 28px; border-radius: 50%; background: #E1F5EE; display: flex; align-items: center; justify-content: center; font-weight: 500; color: #0F6E56; flex-shrink: 0; font-size: 12px; }
+        .seance-content { flex: 1; }
+        .seance-title { font-weight: 500; font-size: 13px; }
+        .seance-theme { font-size: 12px; color: #555; }
+        .btn-remove { background: none; border: none; cursor: pointer; color: #E24B4A; font-size: 22px; padding: 0; }
+        .btn-save { width: 100%; padding: 12px; background: #1D9E75; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; cursor: pointer; margin-top: 1rem; }
+        .seance-stats { display: flex; justify-content: space-between; padding: 0.875rem 1rem; background: #f7f7f7; border-radius: 8px; font-size: 13px; margin-bottom: 1.5rem; font-weight: 500; }
+        .btn-template { padding: 6px 12px; font-size: 12px; border: 1px solid #378ADD; border-radius: 8px; background: transparent; color: #378ADD; cursor: pointer; font-weight: 500; }
+        h2 { font-weight: 500; font-size: 18px; margin-bottom: 1rem; margin-top: 0; }
+        .tab-content { }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-icon">🎯</div>
+        <div class="header-text">
+            <h1>ARCHER RISE</h1>
+            <p>Entraînement au tir à l'arc</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('exercices')">
+            <div class="tab-btn-icon">🏹</div>
+            <div>Exercices</div>
+        </button>
+        <button class="tab-btn" onclick="switchTab('seance')">
+            <div class="tab-btn-icon">📋</div>
+            <div>Séances</div>
+        </button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Exercices Tab -->
+        <div id="exercices-tab" class="tab-content">
+            <div class="filters">
+                <div class="filter-group">
+                    <div class="filter-label">Niveau</div>
+                    <div class="filter-buttons">
+                        <button class="btn-small active" onclick="setLevel('debutant')">Débutant</button>
+                        <button class="btn-small" onclick="setLevel('intermediaire')">Intermédiaire</button>
+                        <button class="btn-small" onclick="setLevel('competition')">Compétition</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <div class="filter-label">Arme</div>
+                    <div class="filter-buttons">
+                        <button class="btn-small active" onclick="setWeapon('classique')">Classique</button>
+                        <button class="btn-small" onclick="setWeapon('poulies')">Poulies</button>
+                        <button class="btn-small" onclick="setWeapon('barebow')">Barebow</button>
+                    </div>
+                </div>
+            </div>
+            <div id="exercises-container"></div>
+        </div>
+
+        <!-- Seance Tab -->
+        <div id="seance-tab" class="tab-content hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">Ma séance</h2>
+                <button class="btn-template" onclick="loadTemplate()">Modèle</button>
+            </div>
+            <input type="text" id="seance-name" class="seance-input" placeholder="Nom de la séance" value="Ma séance">
+            <div id="seance-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 'debutant';
+        let currentWeapon = 'classique';
+        let currentTheme = null;
+        let seance = [];
+        let expandedExercise = null;
+
+        const EXERCISES = {
+            "Bras d'arc": { 
+                icon: "🏹", 
+                debutant: [
+                    { title: "Rotation de l'épaule", desc: "Main à plat contre un mur, bras tendu.", weapon: "all" },
+                    { title: "L'Élastique", desc: "Élastique de sport, bras d'arc tendu.", weapon: "all" },
+                    { title: "La Statue (Post-Tir)", desc: "Après chaque flèche, restez immobile 3 secondes.", weapon: "all" },
+                ], 
+                intermediaire: [
+                    { title: "Holding (Visée Longue)", desc: "Armez, visez, tenez 15-20 secondes sans tirer.", weapon: "all" },
+                    { title: "Laser de Précision", desc: "Pointeur laser sur le stabilisateur.", weapon: "classique" },
+                ], 
+                competition: [
+                    { title: "Simulateur de Vent", desc: "Un partenaire donne des impulsions sur votre stabilisateur.", weapon: "all" },
+                ]
+            },
+            "Libération": { 
+                icon: "✋", 
+                debutant: [
+                    { title: "Le Peigne", desc: "Main de corde contre la joue.", weapon: "all" },
+                    { title: "Lâcher au Plancher", desc: "À 5m, yeux fermés.", weapon: "all" },
+                ], 
+                intermediaire: [
+                    { title: "Transfert de Force", desc: "Imaginez que quelqu'un tire votre coude.", weapon: "all" },
+                ], 
+                competition: [
+                    { title: "Blank Bale", desc: "Tirer sur une paille sans blason.", weapon: "all" },
+                ]
+            },
+            "Mise en tension": { 
+                icon: "💪", 
+                debutant: [
+                    { title: "Le Crayon", desc: "Crayon imaginaire entre les omoplates.", weapon: "all" },
+                    { title: "Montée en T", desc: "Levez l'arc et la main simultanément.", weapon: "all" },
+                ], 
+                intermediaire: [
+                    { title: "Stop-Transfert", desc: "Pause de 2 secondes à l'ancrage.", weapon: "all" },
+                ], 
+                competition: [
+                    { title: "Expansion sous Clicker", desc: "La tension se transforme en expansion.", weapon: "all" },
+                ]
+            },
+            "Mental & Cardio": { 
+                icon: "🧠", 
+                debutant: [
+                    { title: "Cohérence Cardiaque", desc: "Inspirez 5s, bloquez 5s, expirez 5s.", weapon: "all" },
+                    { title: "La Bulle de Silence", desc: "Visualisez une bulle autour de vous.", weapon: "all" },
+                ], 
+                intermediaire: [
+                    { title: "Cardiopush", desc: "15 squats, puis tirez immédiatement.", weapon: "all" },
+                ], 
+                competition: [
+                    { title: "Tir entre deux Battements", desc: "Synchronisez lors de l'expiration.", weapon: "all" },
+                ]
+            },
+        };
+
+        const TEMPLATES = {
+            debutant: [
+                { title: "Rotation de l'épaule", theme: "Bras d'arc", duree: 10 },
+                { title: "Le Crayon", theme: "Mise en tension", duree: 10 },
+                { title: "Cohérence Cardiaque", theme: "Mental & Cardio", duree: 5 },
+            ],
+            intermediaire: [
+                { title: "Holding (Visée Longue)", theme: "Bras d'arc", duree: 15 },
+                { title: "Stop-Transfert", theme: "Mise en tension", duree: 15 },
+                { title: "Cardiopush", theme: "Mental & Cardio", duree: 20 },
+            ],
+            competition: [
+                { title: "Simulateur de Vent", theme: "Bras d'arc", duree: 20 },
+                { title: "Blank Bale", theme: "Libération", duree: 20 },
+                { title: "Tir entre deux Battements", theme: "Mental & Cardio", duree: 10 },
+            ],
+        };
+
+        function setLevel(level) {
+            currentLevel = level;
+            document.querySelectorAll('.filters .btn-small').forEach((btn, idx) => {
+                if (idx < 3) btn.classList.toggle('active', [0, 1, 2][['debutant', 'intermediaire', 'competition'].indexOf(level)] === idx);
+            });
+            render();
+        }
+
+        function setWeapon(weapon) {
+            currentWeapon = weapon;
+            document.querySelectorAll('.filters .btn-small').forEach((btn, idx) => {
+                if (idx >= 3) btn.classList.toggle('active', [3, 4, 5][['classique', 'poulies', 'barebow'].indexOf(weapon)] === idx);
+            });
+            render();
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', (idx === 0 && tab === 'exercices') || (idx === 1 && tab === 'seance'));
+            });
+            document.getElementById('exercices-tab').classList.toggle('hidden', tab !== 'exercices');
+            document.getElementById('seance-tab').classList.toggle('hidden', tab !== 'seance');
+            if (tab === 'seance') renderSeance();
+            else render();
+        }
+
+        function getExercises(th, lv) {
+            return (EXERCISES[th] && EXERCISES[th][lv] ? EXERCISES[th][lv] : []).filter(e => e.weapon === 'all' || e.weapon === currentWeapon);
+        }
+
+        function inSeance(title) {
+            return seance.some(s => s.title === title);
+        }
+
+        function addEx(title, theme) {
+            if (!inSeance(title)) {
+                const ex = getExercises(theme, currentLevel).find(e => e.title === title);
+                if (ex) seance.push({ ...ex, theme });
+                render();
+            }
+        }
+
+        function removeEx(title) {
+            seance = seance.filter(s => s.title !== title);
+            renderSeance();
+        }
+
+        function render() {
+            const container = document.getElementById('exercises-container');
+            
+            if (!currentTheme) {
+                container.innerHTML = '<div class="grid">' + Object.entries(EXERCISES).map(([th, data]) => `
+                    <div class="card" onclick="openTheme('${th}')">
+                        <div class="card-icon">${data.icon}</div>
+                        <div class="card-title">${th}</div>
+                        <div class="card-subtitle">${getExercises(th, currentLevel).length} ex.</div>
+                    </div>
+                `).join('') + '</div>';
+            } else {
+                const exercises = getExercises(currentTheme, currentLevel);
+                container.innerHTML = `
+                    <button class="back-btn" onclick="openTheme(null)">← Retour</button>
+                    <h2>${EXERCISES[currentTheme].icon} ${currentTheme}</h2>
+                    <div>${exercises.map((ex, i) => `
+                        <div class="exercise-item ${expandedExercise === i ? 'expanded' : ''}" onclick="expandEx(${i})">
+                            <div class="exercise-header">
+                                <div>
+                                    <div class="exercise-title">${ex.title}</div>
+                                    ${expandedExercise === i ? `<div class="exercise-desc">${ex.desc}</div>` : ''}
+                                </div>
+                                <button class="btn-add ${inSeance(ex.title) ? 'added' : ''}" onclick="event.stopPropagation(); addEx('${ex.title}', '${currentTheme}')">${inSeance(ex.title) ? '✓' : '+'}</button>
+                            </div>
+                        </div>
+                    `).join('')}</div>
+                `;
+            }
+        }
+
+        function openTheme(theme) {
+            currentTheme = theme;
+            expandedExercise = null;
+            render();
+        }
+
+        function expandEx(idx) {
+            expandedExercise = expandedExercise === idx ? null : idx;
+            render();
+        }
+
+        function loadTemplate() {
+            seance = JSON.parse(JSON.stringify(TEMPLATES[currentLevel] || []));
+            renderSeance();
+        }
+
+        function renderSeance() {
+            const container = document.getElementById('seance-container');
+            const name = document.getElementById('seance-name').value;
+
+            if (seance.length === 0) {
+                container.innerHTML = '<div class="seance-empty"><div style="font-size: 48px; margin-bottom: 12px;">📋</div><p>Ajoutez des exercices pour créer une séance</p></div>';
+            } else {
+                const total = seance.reduce((a, e) => a + (e.duree || 15), 0);
+                container.innerHTML = `
+                    <div>${seance.map((ex, i) => `
+                        <div class="seance-item">
+                            <div class="seance-number">${i + 1}</div>
+                            <div class="seance-content">
+                                <div class="seance-title">${ex.title}</div>
+                                <div class="seance-theme">${ex.theme}</div>
+                            </div>
+                            <button class="btn-remove" onclick="removeEx('${ex.title}')">×</button>
+                        </div>
+                    `).join('')}</div>
+                    <div class="seance-stats">
+                        <span>${seance.length} exercice(s)</span>
+                        <span>${total} min estimées</span>
+                    </div>
+                    <button class="btn-save" onclick="alert('Séance \"' + document.getElementById('seance-name').value + '\" sauvegardée !')">💾 Sauvegarder</button>
+                `;
+            }
+        }
+
+        // Init
+        render();
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>
